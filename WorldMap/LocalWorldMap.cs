@@ -11,15 +11,15 @@ namespace WorldMap
         public virtual int RobotId { get; set; }
         public virtual int TeamId { get; set; }
         public virtual Location robotLocation { get; set; }
-        public virtual RoboCupRobotRole robotRole { get; set; }
-        public virtual BallHandlingState ballHandlingState { get; set; }
+        //public virtual RoboCupRobotRole robotRole { get; set; }
+        //public virtual BallHandlingState ballHandlingState { get; set; }
         public virtual string messageDisplay { get; set; }
 
         public virtual PlayingSide playingSide { get; set; }
         public virtual Location robotGhostLocation { get; set; }
         public virtual Location destinationLocation { get; set; }
         public virtual Location waypointLocation { get; set; }
-        public virtual List<Location> ballLocationList { get; set; }
+        //public virtual List<Location> ballLocationList { get; set; }
         public virtual List<LocationExtended> obstaclesLocationList { get; set; }
         public virtual List<PolarPointListExtended> lidarObjectList { get; set; }
 

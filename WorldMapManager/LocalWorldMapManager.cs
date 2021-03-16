@@ -22,16 +22,16 @@ namespace WorldMapManager
             bypassMulticastUdp = bypassMulticast;
         }
 
-        //public void OnPhysicalPositionReceived(object sender, EventArgsLibrary.LocationArgs e)
-        //{
-        //    if (localWorldMap == null)
-        //        return;
-        //    if (robotId == e.RobotId)
-        //    {
-        //        localWorldMap.robotLocation = e.Location;
-        //        OnLocalWorldMap(robotId, localWorldMap);
-        //    }
-        //}
+        public void OnPhysicalPositionReceived(object sender, EventArgsLibrary.LocationArgs e)
+        {
+            if (localWorldMap == null)
+                return;
+            if (localWorldMap.RobotId == e.RobotId)
+            {
+                localWorldMap.robotLocation = e.Location;
+                OnLocalWorldMapForDisplayOnly(localWorldMap);
+            }
+        }
 
         DecimalJsonConverter decimalJsonConverter = new DecimalJsonConverter();
         //public void OnPerceptionReceived(object sender, EventArgsLibrary.PerceptionArgs e)
@@ -105,7 +105,7 @@ namespace WorldMapManager
                 localWorldMap.destinationLocation = e.Location;
             }
         }
-
+        /*
         public void OnRoleReceived(object sender, EventArgsLibrary.RoleArgs e)
         {
             if (localWorldMap == null)
@@ -125,7 +125,7 @@ namespace WorldMapManager
                 localWorldMap.ballHandlingState = e.State;
             }
         }
-
+        */
         public void OnMessageDisplayReceived(object sender, EventArgsLibrary.MessageDisplayArgs e)
         {
             if (localWorldMap == null)
@@ -223,25 +223,25 @@ namespace WorldMapManager
         //}
 
         //Output events
-        public event EventHandler<DataReceivedArgs> OnMulticastSendLocalWorldMapEvent;
-        public virtual void OnMulticastSendLocalWorldMapCommand(byte[] data)
-        {
-            var handler = OnMulticastSendLocalWorldMapEvent;
-            if (handler != null)
-            {
-                handler(this, new DataReceivedArgs { Data = data });
-            }
-        }
+        //public event EventHandler<DataReceivedArgs> OnMulticastSendLocalWorldMapEvent;
+        //public virtual void OnMulticastSendLocalWorldMapCommand(byte[] data)
+        //{
+        //    var handler = OnMulticastSendLocalWorldMapEvent;
+        //    if (handler != null)
+        //    {
+        //        handler(this, new DataReceivedArgs { Data = data });
+        //    }
+        //}
 
-        public event EventHandler<LocalWorldMapArgs> OnLocalWorldMapToGlobalWorldMapGeneratorEvent;
-        public virtual void OnLocalWorldMapToGlobalWorldMapGenerator(LocalWorldMap data)
-        {
-            var handler = OnLocalWorldMapToGlobalWorldMapGeneratorEvent;
-            if (handler != null)
-            {
-                handler(this, new LocalWorldMapArgs { LocalWorldMap = data});
-            }
-        }
+        //public event EventHandler<LocalWorldMapArgs> OnLocalWorldMapToGlobalWorldMapGeneratorEvent;
+        //public virtual void OnLocalWorldMapToGlobalWorldMapGenerator(LocalWorldMap data)
+        //{
+        //    var handler = OnLocalWorldMapToGlobalWorldMapGeneratorEvent;
+        //    if (handler != null)
+        //    {
+        //        handler(this, new LocalWorldMapArgs { LocalWorldMap = data});
+        //    }
+        //}
 
         ////Output event for display only : NO USE for transmitting data !
         public event EventHandler<LocalWorldMapArgs> OnLocalWorldMapForDisplayOnlyEvent;
@@ -255,14 +255,14 @@ namespace WorldMapManager
         }
 
         ////Output event for Multicast Bypass : NO USE at RoboCup !
-        public event EventHandler<LocalWorldMapArgs> OnLocalWorldMapBypassEvent;
-        public virtual void OnLocalWorldMapBypass(LocalWorldMap map)
-        {
-            var handler = OnLocalWorldMapBypassEvent;
-            if (handler != null)
-            {
-                handler(this, new LocalWorldMapArgs { LocalWorldMap = map });
-            }
-        }
+        //public event EventHandler<LocalWorldMapArgs> OnLocalWorldMapBypassEvent;
+        //public virtual void OnLocalWorldMapBypass(LocalWorldMap map)
+        //{
+        //    var handler = OnLocalWorldMapBypassEvent;
+        //    if (handler != null)
+        //    {
+        //        handler(this, new LocalWorldMapArgs { LocalWorldMap = map });
+        //    }
+        //}
     }
 }

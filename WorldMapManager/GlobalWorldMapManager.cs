@@ -88,7 +88,7 @@ namespace WorldMapManager
 
             //Pour l'instant on prend la position de balle vue par le robot 1 comme vérité, mais c'est à améliorer !
             if (localWorldMapDictionary.Count > 0)
-                globalWorldMap.ballLocationList = localWorldMapDictionary.First().Value.ballLocationList;
+                //globalWorldMap.ballLocationList = localWorldMapDictionary.First().Value.ballLocationList;
             globalWorldMap.teammateLocationList = new Dictionary<int, Location>();
             globalWorldMap.teammateGhostLocationList = new Dictionary<int, Location>();
             globalWorldMap.teammateDestinationLocationList = new Dictionary<int, Location>();
@@ -106,9 +106,9 @@ namespace WorldMapManager
                 //On ajoute la position des robots de l'équipe dans la WorldMap
                 globalWorldMap.teammateLocationList.Add(localMap.Key, localMap.Value.robotLocation);
                 //On ajoute le rôle des robots de l'équipe dans la WorldMap
-                globalWorldMap.teammateRoleList.Add(localMap.Key, localMap.Value.robotRole);
+                //globalWorldMap.teammateRoleList.Add(localMap.Key, localMap.Value.robotRole);
                 //On ajoute l'état de Ball Handling des robots de l'équipe dans la WorldMap
-                globalWorldMap.teammateBallHandlingStateList.Add(localMap.Key, localMap.Value.ballHandlingState);
+                //globalWorldMap.teammateBallHandlingStateList.Add(localMap.Key, localMap.Value.ballHandlingState);
                 //On ajoute le message à afficher des robots de l'équipe dans la WorldMap
                 globalWorldMap.teammateDisplayMessageList.Add(localMap.Key, localMap.Value.messageDisplay);
                 //On ajoute le playing Side des robots de l'équipe dans la WorldMap
@@ -176,7 +176,7 @@ namespace WorldMapManager
             catch { }
             
             /// Transfert de la globalworldmap via le Multicast UDP
-            var s = ZeroFormatterSerializer.Serialize<WorldMap.ZeroFormatterMsg>(globalWorldMap);
+            //var s = ZeroFormatterSerializer.Serialize<WorldMap.ZeroFormatterMsg>(globalWorldMap);
             OnGlobalWorldMap(globalWorldMap);
             //OnMulticastSendGlobalWorldMap(s);
             //GWMEmiseMonitoring.GWMEmiseMonitor(s.Length);

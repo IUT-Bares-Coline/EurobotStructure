@@ -19,11 +19,11 @@ namespace Positioning2WheelsNS
         }
 
         double rayonRoue = 0.027;
-        //double ecartRoues =
+        double ecartRoues = 0.244;
 
         public void OnOdometryRobotSpeedReceived(object sender, PolarSpeedArgs e)
         {
-            //Vtheta = (Vx-Vy)/2* ecartRoues;
+            PolarSpeedArgs.Vtheta(get, (PolarSpeedArgs.Vx - PolarSpeedArgs.Vy) / 2 * ecartRoues);
 
 
 

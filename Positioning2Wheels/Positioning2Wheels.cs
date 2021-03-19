@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Utilities;
 
+
 namespace Positioning2WheelsNS
 {
     public class Positioning2Wheels
@@ -18,24 +19,22 @@ namespace Positioning2WheelsNS
             robotId = id;
         }
 
-        double rayonRoue = 0.027;
-        double ecartRoues = 0.244;
+        //double rayonRoue = 0.027;
+        //double ecartRoues = 0.244;
+        double positionX = 0;
+        double positionY = 0;
+        double positionTheta = 0;
+
 
         public void OnOdometryRobotSpeedReceived(object sender, PolarSpeedArgs e)
         {
-            PolarSpeedArgs.Vtheta(get, (PolarSpeedArgs.Vx - PolarSpeedArgs.Vy) / 2 * ecartRoues);
+            
+            //e.Vtheta = e.Vy * ecartRoues;
 
+            positionTheta += e.Vtheta / 50;
+            positionX += (e.Vx / 50) * Math.Cos(positionTheta);
+            positionY += (e.Vx / 50) * Math.Sin(positionTheta);
 
-
-
-            //https://lucidar.me/fr/mechanics/geometric-model-for-differential-wheeled-mobile-robot/
-            //Vx { get; set; }
-            //Vy { get; set; }
-            //Vtheta { get; set; }
-            //angleMotor1;
-            //angleMotor2;
-
-            //calcul de la nouvelle position
 
 
             //posRobotRefTerrain; = qqchose

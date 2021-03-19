@@ -71,11 +71,27 @@ namespace TrajectoryGeneratorNonHolonomeNS
             OnGhostLocation(robotId, ghostLocationRefTerrain);
         }
 
+        double ptCibleprojete = 0;
+        double xCp = 0;
+        double yCp = 0;
+        double dLinG = 0;
+        double vLinG = 0;
+        double dLinD = 0;
+        double vLinD = 0;
+
+
         void PIDPosition()
         {
             //A remplir
-            double vLineaireRobot=0, vAngulaireRobot=0;
+            //ON EN EST LAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+            //ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI
 
+            dLinD = Math.Sqrt(Math.Pow((xCp - ghostLocationRefTerrain.X), 2) + Math.Pow((yCp - ghostLocationRefTerrain.Y), 2)) ;
+
+            /////
+
+            double vLineaireRobot=0, vAngulaireRobot=0;
+            /////
 
             //Si tout c'est bien passé, on envoie les vitesses consigne.
             OnSpeedConsigneToRobot(robotId, (float)vLineaireRobot, (float)vAngulaireRobot);

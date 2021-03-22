@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Utilities;
 
 namespace TrajectoryGeneratorNonHolonomeNS
+namespace ClasseVector //ajouté
 {
     public class TrajectoryGeneratorNonHolonome
     {
@@ -63,31 +64,47 @@ namespace TrajectoryGeneratorNonHolonomeNS
             }
         }
 
-        void CalculateGhostPosition()
-        {
-            //A remplir
 
-            //On renvoie la position du ghost pour affichage
-            OnGhostLocation(robotId, ghostLocationRefTerrain);
-        }
 
         double ptCibleprojete = 0;
         double xCp = 0;
         double yCp = 0;
-        double dLinG = 0;
         double vLinG = 0;
-        double dLinD = 0;
-        double vLinD = 0;
+        double vLinGarret = 0;
+        double dLinG = 0; //G de ghost
+        double darret = 0;
+        double thetaCible = 0;
+        double thetaEcart = 0;
+
+
+        void CalculateGhostPosition()
+        {
+            //A remplir
+            
+            //On renvoie la position du ghost pour affichage
+            OnGhostLocation(robotId, ghostLocationRefTerrain);
+        }
 
 
         void PIDPosition()
         {
             //A remplir
-            //ON EN EST LAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            //ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI ICI
+            //ON EN EST LA
+            thetaCible = Math.Pow(Math.Atan((wayPointLocation.Y - currentLocationRefTerrain.Y) / (wayPointLocation.X - currentLocationRefTerrain.X)),2);
+            thetaEcart = ghostLocationRefTerrain.Theta % wayPointLocation.Theta; //% = modulo ?!?!!!!!! a verifier !!!
 
-            dLinD = Math.Sqrt(Math.Pow((xCp - ghostLocationRefTerrain.X), 2) + Math.Pow((yCp - ghostLocationRefTerrain.Y), 2)) ;
+            Vector vectorCible = new Vector(wayPointLocation.X, wayPointLocation.Y ;
+            Vector vectorGhost = new Vector(ghostLocationRefTerrain.X, ghostLocationRefTerrain.Y ; //vecteur ghost
+            //pt projeté cible = produit scalaire entre vecteur cible et vecteur ghost
 
+            dLinG = Math.Sqrt(Math.Pow((xCp - ghostLocationRefTerrain.X), 2) + Math.Pow((yCp - ghostLocationRefTerrain.Y), 2)) ;
+            vLinGarret = vLinG / 2 * dLinG;
+
+
+            if(dLinG>darret)
+            {
+                vLinG += accelLineaire/50;
+            }
             /////
 
             double vLineaireRobot=0, vAngulaireRobot=0;

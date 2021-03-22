@@ -1,4 +1,5 @@
 ﻿using EventArgsLibrary;
+using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using Utilities;
 
 namespace TrajectoryGeneratorNonHolonomeNS
-namespace ClasseVector //ajouté
 {
     public class TrajectoryGeneratorNonHolonome
     {
@@ -18,6 +18,7 @@ namespace ClasseVector //ajouté
         Location currentLocationRefTerrain;
         Location wayPointLocation;
         Location ghostLocationRefTerrain;
+        Location cibleProjetee;
 
         double accelLineaire, accelAngulaire;
         double vitesseLineaireMax, vitesseAngulaireMax;
@@ -67,8 +68,6 @@ namespace ClasseVector //ajouté
 
 
         double ptCibleprojete = 0;
-        double xCp = 0;
-        double yCp = 0;
         double vLinG = 0;
         double vLinGarret = 0;
         double dLinG = 0; //G de ghost
@@ -76,11 +75,72 @@ namespace ClasseVector //ajouté
         double thetaCible = 0;
         double thetaEcart = 0;
 
+        public enum ghostState { idle, avance_recule, rotation }
+        ghostState state = ghostState.idle;
 
         void CalculateGhostPosition()
         {
             //A remplir
+            //ON EN EST LA
+
+            switch (state)
+            {
+                case ghostState.idle: //idle = attente
+                    accelLineaire = 0;
+                    break;
+
+                case ghostState.rotation:
+                    thetaCible = Math.Pow(Math.Atan((wayPointLocation.Y - currentLocationRefTerrain.Y) / (wayPointLocation.X - currentLocationRefTerrain.X)), 2);
+                    thetaEcart = thetaCible - Toolbox.ModuloByAngle( ghostLocationRefTerrain.Theta, wayPointLocation.Theta); //% = modulo ?!?!!!!!! a verifier !!!
+
+                    if(thetaEcart>0.2)
+                    {
+                        dLinG = Math.Sqrt(Math.Pow((cibleProjetee.X - ghostLocationRefTerrain.X), 2) + Math.Pow((cibleProjetee.Y - ghostLocationRefTerrain.Y), 2));
+                        vLinGarret = vLinG / 2 * dLinG;
+
+                        if (dLinG > ghostLocationRefTerrain.Vtheta * ghostLocationRefTerrain.Vtheta / 2 * accelAngulaire)
+                        {
+                            ghostLocationRefTerrain.Vtheta += accelLineaire / 50;
+                        }
+                        else
+                        {
+                            ghostLocationRefTerrain.Vtheta += -accelLineaire / 50; // -!-   <_>     o-|-o     °_°     o_o   
+                        }
+
+                    }
+
+
+
+                    break;
+
+                case ghostState.avance_recule:
+
+                    
+
+                    break;
+
+            }
+                
+
+
+
+
+
+
+            //pt projeté cible (r) = produit scalaire entre vecteur cible et vecteur ghost : theta = theta du ghost
+            ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y)/ Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
+            cibleProjetee.X = ptCibleprojete * Math.Cos(ghostLocationRefTerrain.Theta);
+            cibleProjetee.Y = ptCibleprojete * Math.Sin(ghostLocationRefTerrain.Theta);
+            cibleProjetee.Theta = ghostLocationRefTerrain.Theta;
+
+
+
             
+
+
+            
+
+
             //On renvoie la position du ghost pour affichage
             OnGhostLocation(robotId, ghostLocationRefTerrain);
         }
@@ -89,25 +149,10 @@ namespace ClasseVector //ajouté
         void PIDPosition()
         {
             //A remplir
-            //ON EN EST LA
-            thetaCible = Math.Pow(Math.Atan((wayPointLocation.Y - currentLocationRefTerrain.Y) / (wayPointLocation.X - currentLocationRefTerrain.X)),2);
-            thetaEcart = ghostLocationRefTerrain.Theta % wayPointLocation.Theta; //% = modulo ?!?!!!!!! a verifier !!!
-
-            Vector vectorCible = new Vector(wayPointLocation.X, wayPointLocation.Y ;
-            Vector vectorGhost = new Vector(ghostLocationRefTerrain.X, ghostLocationRefTerrain.Y ; //vecteur ghost
-            //pt projeté cible = produit scalaire entre vecteur cible et vecteur ghost
-
-            dLinG = Math.Sqrt(Math.Pow((xCp - ghostLocationRefTerrain.X), 2) + Math.Pow((yCp - ghostLocationRefTerrain.Y), 2)) ;
-            vLinGarret = vLinG / 2 * dLinG;
-
-
-            if(dLinG>darret)
-            {
-                vLinG += accelLineaire/50;
-            }
+            //PD pas PID
             /////
 
-            double vLineaireRobot=0, vAngulaireRobot=0;
+            double vLineaireRobot = 0, vAngulaireRobot = 0;
             /////
 
             //Si tout c'est bien passé, on envoie les vitesses consigne.
@@ -141,8 +186,8 @@ namespace ClasseVector //ajouté
             var handler = OnSpeedConsigneEvent;
             if (handler != null)
             {
-                handler(this, new PolarSpeedArgs { RobotId = id, Vx = vLineaire, Vy = 0, Vtheta = vAngulaire});
+                handler(this, new PolarSpeedArgs { RobotId = id, Vx = vLineaire, Vy = 0, Vtheta = vAngulaire });
             }
         }
     }
-}
+} 

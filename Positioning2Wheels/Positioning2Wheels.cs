@@ -12,6 +12,7 @@ namespace Positioning2WheelsNS
     public class Positioning2Wheels
     {
         int robotId;
+        double samplingPeriod = 1/50.0; //période d'échantillonage
         Location posRobotRefTerrain = new Location(1, 1, Math.PI/ 4, 0.2, 0.5, 0.2);
 
         public Positioning2Wheels(int id)
@@ -21,20 +22,15 @@ namespace Positioning2WheelsNS
 
         //double rayonRoue = 0.027;
         //double ecartRoues = 0.244;
-        double positionX = 0;
-        double positionY = 0;
-        double positionTheta = 0;
-
 
         public void OnOdometryRobotSpeedReceived(object sender, PolarSpeedArgs e)
         {
-            
-            //e.Vtheta = e.Vy * ecartRoues;
-
-            positionTheta += e.Vtheta / 50;
-            positionX += (e.Vx / 50) * Math.Cos(positionTheta);
-            positionY += (e.Vx / 50) * Math.Sin(positionTheta);
-
+       
+            posRobotRefTerrain.Theta += e.Vtheta * samplingPeriod;
+            posRobotRefTerrain.Vx = e.Vx * Math.Cos(posRobotRefTerrain.Theta);
+            posRobotRefTerrain.Vy = e.Vx * Math.Sin(posRobotRefTerrain.Theta);
+            posRobotRefTerrain.X += posRobotRefTerrain.Vx * samplingPeriod;
+            posRobotRefTerrain.Y += posRobotRefTerrain.Vy * samplingPeriod;
 
 
             //posRobotRefTerrain; = qqchose

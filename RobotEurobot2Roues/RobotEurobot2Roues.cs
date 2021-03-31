@@ -75,6 +75,7 @@ namespace RobotEurobot2Roues
 
             robotMsgProcessor.OnPolarOdometrySpeedFromRobotEvent += positioning2Wheels.OnOdometryRobotSpeedReceived;        //Envoi des vitesses reçues de l'embarqué au module de calcul de positionnement
             positioning2Wheels.OnCalculatedLocationEvent += trajectoryGenerator.OnPhysicalPositionReceived;                 //Envoi du positionnement calculé au module de génération de trajectoire
+            positioning2Wheels.OnCalculatedLocationEvent += localWorldMapManager.OnPhysicalPositionReceived;
             trajectoryGenerator.OnGhostLocationEvent += localWorldMapManager.OnGhostLocationReceived;
 
             strategyManager.InitStrategy(); //à faire après avoir abonné les events !

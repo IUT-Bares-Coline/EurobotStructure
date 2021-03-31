@@ -22,6 +22,8 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
         double accelLineaire, accelAngulaire;
         double vitesseLineaireMax, vitesseAngulaireMax;
+        double toleranceAng;
+        double tolerancedist;
 
         AsservissementPID PID_Position_Lineaire;
         AsservissementPID PID_Position_Angulaire;
@@ -38,6 +40,9 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
             vitesseLineaireMax = 1; //en m.s-1               
             vitesseAngulaireMax = 1 * Math.PI * 1.0; //en rad.s-1
+
+            toleranceAng = 0.2;
+            tolerancedist = 0.2;
         }
 
         void InitPositionPID()
@@ -67,13 +72,17 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
 
 
-        double ptCibleprojete = 0;
-        double vLinG = 0;
-        double vLinGarret = 0;
-        double dLinG = 0; //G de ghost
-        double darret = 0;
-        double thetaCible = 0;
+
+        double thetaArret = 0;
         double thetaEcart = 0;
+        double distArret = 0;
+        double distEcart = 0;
+        double ptCibleprojete = 0;
+        double distRobotCibleProjeteeX = 0;
+        double distRobotCibleProjeteeY = 0;
+        double distRobotCibleProjetee = 0;
+        double angleGhostWaypoint = 0;
+
 
         public enum ghostState { idle, avance_recule, rotation }
         ghostState state = ghostState.idle;
@@ -89,56 +98,144 @@ namespace TrajectoryGeneratorNonHolonomeNS
                     accelLineaire = 0;
                     break;
 
+
                 case ghostState.rotation:
-                    thetaCible = Math.Pow(Math.Atan((wayPointLocation.Y - currentLocationRefTerrain.Y) / (wayPointLocation.X - currentLocationRefTerrain.X)), 2);
-                    thetaEcart = thetaCible - Toolbox.ModuloByAngle( ghostLocationRefTerrain.Theta, wayPointLocation.Theta); //% = modulo ?!?!!!!!! a verifier !!!
+                    
+                    thetaEcart = wayPointLocation.Theta - Toolbox.ModuloByAngle(wayPointLocation.Theta, currentLocationRefTerrain.Theta);
+                    thetaArret = Math.Pow(ghostLocationRefTerrain.Vtheta, 2) / 2 * accelAngulaire;
 
-                    if(thetaEcart>0.2)
+                    if (thetaEcart > 0)
                     {
-                        dLinG = Math.Sqrt(Math.Pow((cibleProjetee.X - ghostLocationRefTerrain.X), 2) + Math.Pow((cibleProjetee.Y - ghostLocationRefTerrain.Y), 2));
-                        vLinGarret = vLinG / 2 * dLinG;
-
-                        if (dLinG > ghostLocationRefTerrain.Vtheta * ghostLocationRefTerrain.Vtheta / 2 * accelAngulaire)
+                        if (ghostLocationRefTerrain.Vtheta < 0)
                         {
-                            ghostLocationRefTerrain.Vtheta += accelLineaire / 50;
+                            ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50;
                         }
                         else
                         {
-                            ghostLocationRefTerrain.Vtheta += -accelLineaire / 50; // -!-   <_>     o-|-o     °_°     o_o   
+                            if (thetaEcart > thetaArret)
+                            {
+                                if (ghostLocationRefTerrain.Vtheta < vitesseAngulaireMax)
+                                {
+                                    ghostLocationRefTerrain.Vtheta += accelAngulaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                }
+                                else
+                                {
+                                    ghostLocationRefTerrain.Vtheta = ghostLocationRefTerrain.Vtheta;
+                                }
+                            }
+                            else
+                            {
+                                ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50;
+                            }  
                         }
-
                     }
-
-
-
+                    else
+                    {
+                        if (ghostLocationRefTerrain.Vtheta > 0)
+                        {
+                            ghostLocationRefTerrain.Vtheta += accelAngulaire / 50;
+                        }
+                        else
+                        {
+                            if (Math.Abs(thetaEcart) > thetaArret)
+                            {
+                                if (ghostLocationRefTerrain.Vtheta > -vitesseAngulaireMax)
+                                {
+                                    ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                }
+                                else
+                                {
+                                    ghostLocationRefTerrain.Vtheta = ghostLocationRefTerrain.Vtheta;
+                                }
+                            }
+                            else
+                            {
+                                ghostLocationRefTerrain.Vtheta += accelAngulaire / 50;
+                            }
+                        }
+                    }
+                    if (Math.Abs(thetaEcart) < toleranceAng)
+                    {
+                        state = ghostState.avance_recule;
+                    }
                     break;
+
 
                 case ghostState.avance_recule:
-
                     
+                    distEcart = wayPointLocation.X - Toolbox.ModuloByAngle(wayPointLocation.X, currentLocationRefTerrain.X);
+                    distArret = Math.Pow(ghostLocationRefTerrain.Vx, 2) / 2 * accelLineaire;
 
+                    if (distEcart > 0)
+                    {
+                        if (ghostLocationRefTerrain.Vx < 0)
+                        {
+                            ghostLocationRefTerrain.Vx -= accelLineaire / 50;
+                        }
+                        else
+                        {
+                            if (distEcart > distArret)
+                            {
+                                if (ghostLocationRefTerrain.Vx < vitesseLineaireMax)
+                                {
+                                    ghostLocationRefTerrain.Vx += accelLineaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                }
+                                else
+                                {
+                                    ghostLocationRefTerrain.Vx = ghostLocationRefTerrain.Vx;
+                                }
+                            }
+                            else
+                            {
+                                ghostLocationRefTerrain.Vx -= accelLineaire / 50;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (ghostLocationRefTerrain.Vx > 0)
+                        {
+                            ghostLocationRefTerrain.Vx += accelLineaire / 50;
+                        }
+                        else
+                        {
+                            if (Math.Abs(distEcart) > distArret)
+                            {
+                                if (ghostLocationRefTerrain.Vx > -vitesseLineaireMax)
+                                {
+                                    ghostLocationRefTerrain.Vx -= accelLineaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                }
+                                else
+                                {
+                                    ghostLocationRefTerrain.Vx = ghostLocationRefTerrain.Vx;
+                                }
+                            }
+                            else
+                            {
+                                ghostLocationRefTerrain.Vx += accelLineaire / 50;
+                            }
+                        }
+                    }
+                    if (Math.Abs(distEcart) < tolerancedist)
+                    {
+                        state = ghostState.avance_recule;
+                    }
                     break;
-
             }
-                
-
-
-
-
 
 
             //pt projeté cible (r) = produit scalaire entre vecteur cible et vecteur ghost : theta = theta du ghost
-            ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y)/ Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
+            ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y) / Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
             cibleProjetee.X = ptCibleprojete * Math.Cos(ghostLocationRefTerrain.Theta);
             cibleProjetee.Y = ptCibleprojete * Math.Sin(ghostLocationRefTerrain.Theta);
             cibleProjetee.Theta = ghostLocationRefTerrain.Theta;
 
 
+            distRobotCibleProjeteeX = cibleProjetee.X - ghostLocationRefTerrain.X;
+            distRobotCibleProjeteeY = cibleProjetee.Y - ghostLocationRefTerrain.Y;
+            distRobotCibleProjetee = Math.Sqrt(Math.Pow(distRobotCibleProjeteeX, 2) + Math.Pow(distRobotCibleProjeteeY, 2));
 
-            
-
-
-            
+            angleGhostWaypoint = ghostLocationRefTerrain.Theta - wayPointLocation.Theta;
 
 
             //On renvoie la position du ghost pour affichage

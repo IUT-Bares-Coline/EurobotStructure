@@ -63,13 +63,13 @@ namespace RobotEurobot2Roues
             usbDriver.OnUSBDataReceivedEvent += msgDecoder.DecodeMsgReceived;                                   // Transmission des messages reçus par l'USB au Message Decoder
             msgDecoder.OnMessageDecodedEvent += robotMsgProcessor.ProcessRobotDecodedMessage;                   // Transmission les messages décodés par le Message Decoder au Message Processor
 
+            //Events d'activation et configuration de l'asservissement en vitesse depuis le Strategy Manager
             strategyManager.On2WheelsToPolarMatrixSetupEvent += robotMsgGenerator.GenerateMessage2WheelsToPolarMatrixSet;   //Transmission des messages de set-up de la matrice de transformation moteurindepeandt -> polaire en embarqué
             strategyManager.On2WheelsAngleSetupEvent += robotMsgGenerator.GenerateMessage2WheelsAngleSet;                   //Transmission des messages de set-up de la config angulaire des roues en embarqué
             strategyManager.OnOdometryPointToMeterSetupEvent += robotMsgGenerator.GenerateMessageOdometryPointToMeter;      //Transmission des messages de set-up du coeff pointToMeter en embarqué
-            strategyManager.On2WheelsPolarSpeedPIDSetupEvent += robotMsgGenerator.GenerateMessage2WheelsPolarSpeedPIDSetup;                 //Setup du PID Polaire
             strategyManager.On2WheelsIndependantSpeedPIDSetupEvent += robotMsgGenerator.GenerateMessage2WheelsIndependantSpeedPIDSetup;     //Setup du PID independant
-            strategyManager.OnSetSpeedConsigneToMotor += robotMsgGenerator.GenerateMessageSetSpeedConsigneToMotor;                          //Transmission des commande de vitesse (en polaire)
-
+            strategyManager.OnSetAsservissementModeEvent += robotMsgGenerator.GenerateMessageSetAsservissementMode;
+            
             robotMsgGenerator.OnMessageToRobotGeneratedEvent += msgEncoder.EncodeMessageToRobot;                // Envoi des messages du générateur de message à l'encoder
             msgEncoder.OnMessageEncodedEvent += usbDriver.SendUSBMessage;                                       // Envoi des messages en USB depuis le message encoder
 
@@ -77,11 +77,13 @@ namespace RobotEurobot2Roues
             positioning2Wheels.OnCalculatedLocationEvent += trajectoryGenerator.OnPhysicalPositionReceived;                 //Envoi du positionnement calculé au module de génération de trajectoire
             positioning2Wheels.OnCalculatedLocationEvent += localWorldMapManager.OnPhysicalPositionReceived;
             trajectoryGenerator.OnGhostLocationEvent += localWorldMapManager.OnGhostLocationReceived;
-
+            
+            trajectoryGenerator.OnSpeedConsigneEvent += robotMsgGenerator.GenerateMessageSetSpeedConsigneToRobot;           //Transmission des commande de vitesse aux moteurs de déplacement
+            strategyManager.OnSetSpeedConsigneToMotorEvent += robotMsgGenerator.GenerateMessageSetSpeedConsigneToMotor;     //Transmission des commande de vitesse (aux moteurs annexes)
+            
             strategyManager.InitStrategy(); //à faire après avoir abonné les events !
 
             StartRobotInterface();
-
 
             while (!exitSystem)
             {
@@ -122,13 +124,9 @@ namespace RobotEurobot2Roues
             robotMsgProcessor.OnPolarOdometrySpeedFromRobotEvent += interfaceRobot.UpdateSpeedPolarOdometryOnInterface;
 
             robotMsgProcessor.OnIndependantOdometrySpeedFromRobotEvent += interfaceRobot.UpdateSpeedIndependantOdometryOnInterface;
-            robotMsgProcessor.On4WheelsSpeedPolarPidErrorCorrectionConsigneDataFromRobotGeneratedEvent += interfaceRobot.UpdateSpeedPolarPidErrorCorrectionConsigneDataOnGraph;
-            robotMsgProcessor.On4WheelsSpeedIndependantPidErrorCorrectionConsigneDataFromRobotGeneratedEvent += interfaceRobot.UpdateSpeedIndependantPidErrorCorrectionConsigneDataOnGraph;
             robotMsgProcessor.On2WheelsSpeedPolarPidErrorCorrectionConsigneDataFromRobotGeneratedEvent += interfaceRobot.UpdateSpeedPolarPidErrorCorrectionConsigneDataOnGraph;
             robotMsgProcessor.On2WheelsSpeedIndependantPidErrorCorrectionConsigneDataFromRobotGeneratedEvent += interfaceRobot.UpdateSpeedIndependantPidErrorCorrectionConsigneDataOnGraph;
 
-            //robotMsgProcessor.On4WheelsSpeedPolarPidCorrectionsFromRobotEvent += interfaceRobot.Update4WheelsSpeedPolarPidCorrections;
-            //robotMsgProcessor.On4WheelsSpeedIndependantPidCorrectionsFromRobotEvent += interfaceRobot.Update4WheelsSpeedIndependantPidCorrections;
             robotMsgProcessor.On2WheelsSpeedPolarPidCorrectionDataFromRobotEvent += interfaceRobot.Update2WheelsSpeedPolarPidCorrections;
             robotMsgProcessor.On2WheelsSpeedIndependantPidCorrectionDataFromRobotEvent += interfaceRobot.Update2WheelsSpeedIndependantPidCorrections;
 
@@ -145,6 +143,9 @@ namespace RobotEurobot2Roues
 
 
             /// Envoi des ordres en provenance de l'interface graphique
+            
+            interfaceRobot.OnCtrlClickOnLocalWorldMapEvent += trajectoryGenerator.OnWaypointReceived;
+
             interfaceRobot.OnEnableDisableMotorsFromInterfaceGeneratedEvent += robotMsgGenerator.GenerateMessageEnableDisableMotors;
             interfaceRobot.OnEnableDisableControlManetteFromInterfaceGeneratedEvent += ChangeUseOfXBoxController;
             interfaceRobot.OnSetAsservissementModeFromInterfaceGeneratedEvent += robotMsgGenerator.GenerateMessageSetAsservissementMode;
@@ -177,10 +178,12 @@ namespace RobotEurobot2Roues
             if (usingXBoxController)
             {
                 xBoxManette.OnSpeedConsigneEvent += robotMsgGenerator.GenerateMessageSetSpeedConsigneToRobot;
+                trajectoryGenerator.OnSpeedConsigneEvent -= robotMsgGenerator.GenerateMessageSetSpeedConsigneToRobot;
             }
             else
             {
-                xBoxManette.OnSpeedConsigneEvent -= robotMsgGenerator.GenerateMessageSetSpeedConsigneToRobot;
+                xBoxManette.OnSpeedConsigneEvent -= robotMsgGenerator.GenerateMessageSetSpeedConsigneToRobot; 
+                trajectoryGenerator.OnSpeedConsigneEvent += robotMsgGenerator.GenerateMessageSetSpeedConsigneToRobot;
             }
         }
 

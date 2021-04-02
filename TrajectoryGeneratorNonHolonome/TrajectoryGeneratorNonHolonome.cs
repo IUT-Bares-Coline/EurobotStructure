@@ -69,12 +69,15 @@ namespace TrajectoryGeneratorNonHolonomeNS
                 PIDPosition();
             }
         }
-        
+
         public void OnWaypointReceived(object sender, PositionArgs destination)
         {
             /// Mise à jour du waypoint courant
             wayPointLocation.X = destination.X;
             wayPointLocation.Y = destination.Y;
+
+            state = ghostState.rotation;
+        }
 
 
 
@@ -119,7 +122,8 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
 
                 case ghostState.rotation:
-                    
+
+                    wayPointLocation.Theta = Math.Atan((wayPointLocation.Y - currentLocationRefTerrain.Y)/(wayPointLocation.X - currentLocationRefTerrain.X)) ;
                     thetaEcart = wayPointLocation.Theta - Toolbox.ModuloByAngle(wayPointLocation.Theta, currentLocationRefTerrain.Theta);
                     thetaArret = Math.Pow(ghostLocationRefTerrain.Vtheta, 2) / (2 * accelAngulaire);
 

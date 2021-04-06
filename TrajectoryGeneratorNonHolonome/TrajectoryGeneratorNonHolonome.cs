@@ -187,25 +187,32 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
                 case ghostState.avance_recule:
 
-                    ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y) / Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
-                    cibleProjetee.X = ptCibleprojete * Math.Cos(ghostLocationRefTerrain.Theta);
-                    cibleProjetee.Y = ptCibleprojete * Math.Sin(ghostLocationRefTerrain.Theta);
-                    cibleProjetee.Theta = ghostLocationRefTerrain.Theta;
+                    //ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y) / Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
+                    cibleProjetee.X = ptCibleprojete * Math.Cos(currentLocationRefTerrain.Theta);
+                    cibleProjetee.Y = ptCibleprojete * Math.Sin(currentLocationRefTerrain.Theta);
+                    cibleProjetee.Theta = currentLocationRefTerrain.Theta;
 
-                    distRobotCibleProjeteeX = cibleProjetee.X - ghostLocationRefTerrain.X;
-                    distRobotCibleProjeteeY = cibleProjetee.Y - ghostLocationRefTerrain.Y;
+                    distRobotCibleProjeteeX = cibleProjetee.X - currentLocationRefTerrain.X;
+                    distRobotCibleProjeteeY = cibleProjetee.Y - currentLocationRefTerrain.Y;
                     distRobotCibleProjetee = Math.Sqrt(Math.Pow(distRobotCibleProjeteeX, 2) + Math.Pow(distRobotCibleProjeteeY, 2));
 
-                    angleGhostWaypoint = ghostLocationRefTerrain.Theta - wayPointLocation.Theta;
+
+                    //angleGhostWaypoint = ghostLocationRefTerrain.Theta - wayPointLocation.Theta;
 
                     //distEcart = wayPointLocation.X - Toolbox.ModuloByAngle(wayPointLocation.X, currentLocationRefTerrain.X); //
+
+
+
                     distArret = Math.Pow(ghostLocationRefTerrain.Vx, 2) / (2 * accelLineaire);
 
-                    if (-90 < angleGhostWaypoint && angleGhostWaypoint < 90)//distRobotCibleProjetee > 0
+
+
+
+                    if (Toolbox.DegToRad(-90) < angleGhostWaypoint && angleGhostWaypoint < Toolbox.DegToRad(90))//distRobotCibleProjetee > 0
                     {
                         if (ghostLocationRefTerrain.Vx < 0)
                         {
-                            ghostLocationRefTerrain.Vx += accelLineaire / 50;       //-= accelLineaire/50
+                            ghostLocationRefTerrain.Vx -= accelLineaire / 50;       //-= accelLineaire/50
                         }
                         else
                         {

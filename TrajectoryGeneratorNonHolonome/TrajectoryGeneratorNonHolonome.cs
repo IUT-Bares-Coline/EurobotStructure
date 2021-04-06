@@ -41,7 +41,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
             vitesseLineaireMax = 1; //en m.s-1               
             vitesseAngulaireMax = 1 * Math.PI * 1.0; //en rad.s-1
 
-            toleranceAng = 0.2;
+            toleranceAng = 0.2; //0.2 //Toolbox.DegToRad(0.2)
             tolerancedist = 0.2;
         }
 
@@ -91,6 +91,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
         double distRobotCibleProjeteeY = 0;
         double distRobotCibleProjetee = 0;
         double angleGhostWaypoint = 0;
+        double thetaDestination = 0;
 
 
         public enum ghostState { idle, avance_recule, rotation }
@@ -102,16 +103,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
             //ON EN EST LA
 
             //pt projeté cible (r) = produit scalaire entre vecteur cible et vecteur ghost : theta = theta du ghost
-            ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y) / Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
-            cibleProjetee.X = ptCibleprojete * Math.Cos(ghostLocationRefTerrain.Theta);
-            cibleProjetee.Y = ptCibleprojete * Math.Sin(ghostLocationRefTerrain.Theta);
-            cibleProjetee.Theta = ghostLocationRefTerrain.Theta;
-
-            distRobotCibleProjeteeX = cibleProjetee.X - ghostLocationRefTerrain.X;
-            distRobotCibleProjeteeY = cibleProjetee.Y - ghostLocationRefTerrain.Y;
-            distRobotCibleProjetee = Math.Sqrt(Math.Pow(distRobotCibleProjeteeX, 2) + Math.Pow(distRobotCibleProjeteeY, 2));
-
-            angleGhostWaypoint = ghostLocationRefTerrain.Theta - wayPointLocation.Theta;
+            
 
 
             switch (state)
@@ -123,15 +115,16 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
                 case ghostState.rotation:
 
-                    wayPointLocation.Theta = Math.Atan((wayPointLocation.Y - currentLocationRefTerrain.Y)/(wayPointLocation.X - currentLocationRefTerrain.X)) ;
-                    thetaEcart = wayPointLocation.Theta - Toolbox.ModuloByAngle(wayPointLocation.Theta, currentLocationRefTerrain.Theta);
+                    thetaDestination = Math.Atan2((wayPointLocation.Y - ghostLocationRefTerrain.Y),(wayPointLocation.X - ghostLocationRefTerrain.X)) ;
+                    thetaEcart = thetaDestination - Toolbox.Modulo2PiAngleRad(ghostLocationRefTerrain.Theta);    //Toolbox.ModuloByAngle(wayPointLocation.Theta, currentLocationRefTerrain.Theta);
                     thetaArret = Math.Pow(ghostLocationRefTerrain.Vtheta, 2) / (2 * accelAngulaire);
+
 
                     if (thetaEcart > 0)
                     {
                         if (ghostLocationRefTerrain.Vtheta < 0)
                         {
-                            ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50;
+                            ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50;      // -= accelAngulaire/50
                         }
                         else
                         {
@@ -139,7 +132,8 @@ namespace TrajectoryGeneratorNonHolonomeNS
                             {
                                 if (ghostLocationRefTerrain.Vtheta < vitesseAngulaireMax)
                                 {
-                                    ghostLocationRefTerrain.Vtheta += accelAngulaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                    //ghostLocationRefTerrain.Vtheta += accelAngulaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                    ghostLocationRefTerrain.Vtheta = ghostLocationRefTerrain.Vtheta + (accelAngulaire / 50);
                                 }
                                 else
                                 {
@@ -164,7 +158,8 @@ namespace TrajectoryGeneratorNonHolonomeNS
                             {
                                 if (ghostLocationRefTerrain.Vtheta > -vitesseAngulaireMax)
                                 {
-                                    ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50; // -!-   <_>     o-|-o     °_°     o_o 
+                                    //ghostLocationRefTerrain.Vtheta -= accelAngulaire / 50; // -!-   <_>     o-|-o     °_°     o_o
+                                    ghostLocationRefTerrain.Vtheta = ghostLocationRefTerrain.Vtheta - (accelAngulaire / 50);
                                 }
                                 else
                                 {
@@ -175,17 +170,34 @@ namespace TrajectoryGeneratorNonHolonomeNS
                             {
                                 ghostLocationRefTerrain.Vtheta += accelAngulaire / 50;
                             }
+
                         }
+                        
                     }
+
+                    ghostLocationRefTerrain.Theta += ghostLocationRefTerrain.Vtheta / 50;
+                    
                     if (Math.Abs(thetaEcart) < toleranceAng)
                     {
                         state = ghostState.avance_recule;
                     }
-                    break;
+
+                    break;    
 
 
                 case ghostState.avance_recule:
-                    
+
+                    ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y) / Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
+                    cibleProjetee.X = ptCibleprojete * Math.Cos(ghostLocationRefTerrain.Theta);
+                    cibleProjetee.Y = ptCibleprojete * Math.Sin(ghostLocationRefTerrain.Theta);
+                    cibleProjetee.Theta = ghostLocationRefTerrain.Theta;
+
+                    distRobotCibleProjeteeX = cibleProjetee.X - ghostLocationRefTerrain.X;
+                    distRobotCibleProjeteeY = cibleProjetee.Y - ghostLocationRefTerrain.Y;
+                    distRobotCibleProjetee = Math.Sqrt(Math.Pow(distRobotCibleProjeteeX, 2) + Math.Pow(distRobotCibleProjeteeY, 2));
+
+                    angleGhostWaypoint = ghostLocationRefTerrain.Theta - wayPointLocation.Theta;
+
                     //distEcart = wayPointLocation.X - Toolbox.ModuloByAngle(wayPointLocation.X, currentLocationRefTerrain.X); //
                     distArret = Math.Pow(ghostLocationRefTerrain.Vx, 2) / (2 * accelLineaire);
 
@@ -193,7 +205,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
                     {
                         if (ghostLocationRefTerrain.Vx < 0)
                         {
-                            ghostLocationRefTerrain.Vx -= accelLineaire / 50;
+                            ghostLocationRefTerrain.Vx += accelLineaire / 50;       //-= accelLineaire/50
                         }
                         else
                         {
@@ -239,6 +251,9 @@ namespace TrajectoryGeneratorNonHolonomeNS
                             }
                         }
                     }
+
+                    ghostLocationRefTerrain.X += ghostLocationRefTerrain.Vx / 50 * Math.Cos(ghostLocationRefTerrain.Theta);
+                    ghostLocationRefTerrain.Y += ghostLocationRefTerrain.Vx / 50 * Math.Sin(ghostLocationRefTerrain.Theta);
 
                     if (Math.Abs(distRobotCibleProjetee) < tolerancedist)
                     {

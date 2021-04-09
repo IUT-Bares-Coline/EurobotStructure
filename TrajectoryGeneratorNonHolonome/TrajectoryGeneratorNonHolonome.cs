@@ -86,10 +86,10 @@ namespace TrajectoryGeneratorNonHolonomeNS
         double thetaEcart = 0;
         double distArret = 0;
         //double distEcart = 0;
-        double ptCibleprojete = 0;
-        double distRobotCibleProjeteeX = 0;
-        double distRobotCibleProjeteeY = 0;
-        double distRobotCibleProjetee = 0;
+        //double ptCibleprojete = 0;
+        double distGhostCibleProjeteeX = 0;
+        double distGhostCibleProjeteeY = 0;
+        double distGhostCibleProjetee = 0;
         double angleGhostWaypoint = 0;
         double thetaDestination = 0;
 
@@ -109,7 +109,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
             switch (state)
             {
                 case ghostState.idle: //idle = attente
-                    accelLineaire = 0;
+                    ghostLocationRefTerrain.Vx = 0;
                     break;
 
 
@@ -188,16 +188,16 @@ namespace TrajectoryGeneratorNonHolonomeNS
                 case ghostState.avance_recule:
 
                     //ptCibleprojete = (wayPointLocation.X * ghostLocationRefTerrain.X + wayPointLocation.Y * ghostLocationRefTerrain.Y) / Math.Sqrt(Math.Pow((ghostLocationRefTerrain.X), 2) + Math.Pow((ghostLocationRefTerrain.Y), 2));
-                    cibleProjetee.X = ptCibleprojete * Math.Cos(currentLocationRefTerrain.Theta);
-                    cibleProjetee.Y = ptCibleprojete * Math.Sin(currentLocationRefTerrain.Theta);
-                    cibleProjetee.Theta = currentLocationRefTerrain.Theta;
+                    cibleProjetee.X = ghostLocationRefTerrain.X + Math.Cos(ghostLocationRefTerrain.Theta);//ptCibleprojete * Math.Cos(ghostLocationRefTerrain.Theta);
+                    cibleProjetee.Y = ghostLocationRefTerrain.Y + Math.Cos(ghostLocationRefTerrain.Theta);//ptCibleprojete * Math.Sin(ghostLocationRefTerrain.Theta);
+                    cibleProjetee.Theta = ghostLocationRefTerrain.Theta;
 
-                    distRobotCibleProjeteeX = cibleProjetee.X - currentLocationRefTerrain.X;
-                    distRobotCibleProjeteeY = cibleProjetee.Y - currentLocationRefTerrain.Y;
-                    distRobotCibleProjetee = Math.Sqrt(Math.Pow(distRobotCibleProjeteeX, 2) + Math.Pow(distRobotCibleProjeteeY, 2));
+                    distGhostCibleProjeteeX = cibleProjetee.X - ghostLocationRefTerrain.X;
+                    distGhostCibleProjeteeY = cibleProjetee.Y - ghostLocationRefTerrain.Y;
+                    distGhostCibleProjetee = Math.Sqrt(Math.Pow(distGhostCibleProjeteeX, 2) + Math.Pow(distGhostCibleProjeteeY, 2));
 
 
-                    //angleGhostWaypoint = ghostLocationRefTerrain.Theta - wayPointLocation.Theta;
+                    angleGhostWaypoint = Toolbox.ModuloByAngle(ghostLocationRefTerrain.Theta,wayPointLocation.Theta);
 
                     //distEcart = wayPointLocation.X - Toolbox.ModuloByAngle(wayPointLocation.X, currentLocationRefTerrain.X); //
 
@@ -208,7 +208,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
 
 
 
-                    if (Toolbox.DegToRad(-90) < angleGhostWaypoint && angleGhostWaypoint < Toolbox.DegToRad(90))//distRobotCibleProjetee > 0
+                    if (Math.Abs(angleGhostWaypoint) < Math.PI/2) //(Toolbox.DegToRad(-90) < angleGhostWaypoint && angleGhostWaypoint < Toolbox.DegToRad(90))//distRobotCibleProjetee > 0
                     {
                         if (ghostLocationRefTerrain.Vx < 0)
                         {
@@ -216,7 +216,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
                         }
                         else
                         {
-                            if (distRobotCibleProjetee > distArret)
+                            if (distGhostCibleProjetee > distArret)
                             {
                                 if (ghostLocationRefTerrain.Vx < vitesseLineaireMax)
                                 {
@@ -241,7 +241,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
                         }
                         else
                         {
-                            if (Math.Abs(distRobotCibleProjetee) > distArret)
+                            if (Math.Abs(distGhostCibleProjetee) > distArret)
                             {
                                 if (ghostLocationRefTerrain.Vx > -vitesseLineaireMax)
                                 {
@@ -262,7 +262,7 @@ namespace TrajectoryGeneratorNonHolonomeNS
                     ghostLocationRefTerrain.X += ghostLocationRefTerrain.Vx / 50 * Math.Cos(ghostLocationRefTerrain.Theta);
                     ghostLocationRefTerrain.Y += ghostLocationRefTerrain.Vx / 50 * Math.Sin(ghostLocationRefTerrain.Theta);
 
-                    if (Math.Abs(distRobotCibleProjetee) < tolerancedist)
+                    if (Math.Abs(distGhostCibleProjetee) < tolerancedist)
                     {
                         state = ghostState.idle;
                     }
